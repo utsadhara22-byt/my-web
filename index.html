@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS 2027 | Future Tech & Cultural Fest</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        neon: {
+                            cyan: '#00f3ff',
+                            purple: '#b026ff',
+                            gold: '#ffd700',
+                            pink: '#ff007f'
+                        },
+                        cyber: {
+                            dark: '#030712',
+                            card: 'rgba(15, 23, 42, 0.65)',
+                            border: 'rgba(0, 243, 255, 0.2)'
+                        }
+                    },
+                    boxShadow: {
+                        'neon-cyan': '0 0 20px rgba(0, 243, 255, 0.4)',
+                        'neon-purple': '0 0 20px rgba(176, 38, 255, 0.4)',
+                        'neon-gold': '0 0 20px rgba(255, 215, 0, 0.4)',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <!-- QR Code Generator library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #030712;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism utility classes */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-panel-glow {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 243, 255, 0.25);
+            box-shadow: 0 0 25px -5px rgba(0, 243, 255, 0.15);
+        }
+
+        .neon-border-cyan {
+            border-color: rgba(0, 243, 255, 0.5);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+        }
+
+        .neon-text-cyan {
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.6);
+        }
+
+        .neon-text-purple {
+            text-shadow: 0 0 10px rgba(176, 38, 255, 0.6);
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #030712;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+            border: 1px solid rgba(0, 243, 255, 0.2);
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00f3ff;
+        }
+
+        /* Cyberpunk scanline effect overlay */
+        .scanlines {
+            background: linear-gradient(
+                rgba(18, 16, 16, 0) 50%, 
+                rgba(0, 0, 0, 0.25) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="relative min-h-screen">
+
+    <!-- Canvas Interactive Particle Background -->
+    <canvas id="particleCanvas" class="fixed inset-0 pointer-events-none z-0"></canvas>
+    <div class="scanlines fixed inset-0 z-10 opacity-30 pointer-events-none"></div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="fixed bottom-6 right-6 z-50 transform translate-y-32 opacity-0 transition-all duration-300 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border text-sm font-medium glass-panel">
+        <i id="toastIcon" class="text-xl"></i>
+        <span id="toastMessage"></span>
+    </div>
+
+    <!-- Audio / SFX Engine Simulation -->
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        let soundEnabled = true;
+
+        function playBeep(freq = 600, duration = 0.08) {
+            if (!soundEnabled) return;
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const btn = document.getElementById('soundToggleBtn');
+            if(soundEnabled) {
+                btn.innerHTML = `<i class="fa-solid fa-volume-high text-neon-cyan"></i> SFX ON`;
+                showToast("Audio feedback enabled", "info");
+                playBeep(800, 0.1);
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-volume-xmark text-slate-500"></i> SFX OFF`;
+                showToast("Audio feedback muted", "info");
+            }
+        }
+    </script>
+
+    <!-- Header Navigation -->
+    <header class="fixed top-0 left-0 right-0 z-40 bg-cyber-dark/80 backdrop-blur-xl border-b border-slate-800/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <a href="#" onclick="playBeep(900)" class="flex items-center gap-3 group">
+                <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-cyan-500 via-purple-600 to-pink-500 p-[2px] shadow-neon-cyan group-hover:scale-105 transition-transform">
+                    <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center font-mono font-black text-neon-cyan text-xl">
+                        N
+                    </div>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-xl font-extrabold tracking-wider font-mono text-white flex items-center gap-1">
+                        NEXUS<span class="text-neon-cyan">'27</span>
+                    </span>
+                    <span class="text-[9px] text-neon-purple uppercase tracking-widest font-mono font-bold">Future Tech & Culture</span>
+                </div>
+            </a>
+
+            <!-- Navigation Links -->
+            <nav class="hidden lg:flex items-center gap-8 text-xs font-mono uppercase tracking-wider text-slate-300">
+                <a href="#hero" onclick="playBeep(500)" class="hover:text-neon-cyan transition-colors">Home</a>
+                <a href="#about" onclick="playBeep(500)" class="hover:text-neon-cyan transition-colors">About</a>
+                <a href="#events" onclick="playBeep(500)" class="hover:text-neon-cyan transition-colors">Events</a>
+                <a href="#ticket-builder" onclick="playBeep(500)" class="hover:text-neon-cyan transition-colors">Pass Builder</a>
+                <a href="#schedule" onclick="playBeep(500)" class="hover:text-neon-cyan transition-colors">Schedule</a>
+                <a href="#buzz" onclick="playBeep(500)" class="hover:text-neon-cyan transition-colors">Live Buzz</a>
+            </nav>
+
+            <!-- Action Controls -->
+            <div class="flex items-center gap-3 sm:gap-4">
+                <button id="soundToggleBtn" onclick="toggleSound()" class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl border border-slate-800 bg-slate-900/60 text-xs font-mono text-slate-300 hover:border-slate-700 transition-colors">
+                    <i class="fa-solid fa-volume-high text-neon-cyan"></i> SFX ON
+                </button>
+
+                <button onclick="playBeep(700); openAuthModal('signin');" class="hidden sm:inline-flex px-4 py-2 text-xs font-mono uppercase tracking-wider text-slate-300 hover:text-white transition-colors">
+                    Sign In
+                </button>
+
+                <a href="#ticket-builder" onclick="playBeep(800)" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 via-indigo-600 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-slate-950 font-mono font-extrabold text-xs uppercase tracking-wider shadow-neon-cyan transition-all transform hover:-translate-y-0.5">
+                    Get Pass
+                </a>
+
+                <button onclick="toggleMobileMenu()" class="lg:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800">
+                    <i class="fa-solid fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobileMenu" class="hidden lg:hidden px-6 pt-2 pb-6 bg-slate-950 border-b border-slate-800 font-mono text-sm">
+            <div class="flex flex-col gap-4 pt-2">
+                <a href="#hero" onclick="toggleMobileMenu()" class="text-slate-300 hover:text-neon-cyan">Home</a>
+                <a href="#about" onclick="toggleMobileMenu()" class="text-slate-300 hover:text-neon-cyan">About</a>
+                <a href="#events" onclick="toggleMobileMenu()" class="text-slate-300 hover:text-neon-cyan">Events Grid</a>
+                <a href="#ticket-builder" onclick="toggleMobileMenu()" class="text-slate-300 hover:text-neon-cyan">Ticket Builder</a>
+                <a href="#schedule" onclick="toggleMobileMenu()" class="text-slate-300 hover:text-neon-cyan">Schedule</a>
+                <a href="#buzz" onclick="toggleMobileMenu()" class="text-slate-300 hover:text-neon-cyan">Campus Buzz</a>
+                <div class="pt-4 border-t border-slate-800 flex flex-col gap-2">
+                    <button onclick="openAuthModal('signin'); toggleMobileMenu();" class="w-full py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200">Sign In</button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Campus Live Ticker Header Bar -->
+    <div class="relative z-30 pt-20 bg-slate-950/90 border-b border-slate-900 overflow-hidden py-2 text-xs font-mono">
+        <div class="max-w-7xl mx-auto px-4 flex items-center gap-4">
+            <span class="flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-neon-cyan/10 border border-neon-cyan/40 text-neon-cyan text-[10px] font-bold uppercase tracking-widest shrink-0">
+                <span class="w-2 h-2 rounded-full bg-neon-cyan animate-ping"></span> Live Broadcast
+            </span>
+            <div class="overflow-hidden whitespace-nowrap w-full">
+                <div class="inline-block animate-marquee text-slate-400">
+                    🚀 Hackathon Registrations reach 85% capacity! &nbsp;&bull;&nbsp; 🎸 Band Night Headliner Confirmed: Synthetica &nbsp;&bull;&nbsp; 🎮 Esports Valorant Prize Pool boosted by $1,000 &nbsp;&bull;&nbsp; 🎟️ Early Bird VIP Pass discounts end in 48 hours!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative z-20 min-h-screen flex items-center justify-center pt-8 pb-20 overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative">
+            
+            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border border-neon-cyan/30 text-neon-cyan text-xs font-mono font-semibold mb-8 shadow-neon-cyan">
+                <i class="fa-solid fa-atom animate-spin text-neon-cyan"></i> MARCH 12 - 14, 2027 &bull; MAIN CAMPUS
+            </div>
+
+            <h1 class="text-4xl sm:text-6xl lg:text-8xl font-black tracking-tight text-white mb-6 font-mono leading-none">
+                THE FUTURE IS <br>
+                <span class="bg-gradient-to-r from-neon-cyan via-purple-400 to-neon-pink bg-clip-text text-transparent neon-text-cyan">
+                    SYNTHESIZED.
+                </span>
+            </h1>
+
+            <p class="max-w-2xl mx-auto text-base sm:text-xl text-slate-300 mb-12 font-sans font-normal leading-relaxed">
+                Step into <strong class="text-white">NEXUS 2027</strong>—the multi-dimensional convergence of futuristic artificial intelligence, competitive esports, indie cultural bands, and creative design.
+            </p>
+
+            <!-- Live Interactive Countdown Timer -->
+            <div class="grid grid-cols-4 gap-3 sm:gap-6 max-w-xl mx-auto mb-14 font-mono">
+                <div class="glass-panel-glow rounded-2xl p-4 sm:p-5 flex flex-col items-center">
+                    <span id="days" class="text-2xl sm:text-5xl font-black text-white">00</span>
+                    <span class="text-[10px] sm:text-xs uppercase tracking-widest text-neon-cyan font-bold mt-1">Days</span>
+                </div>
+                <div class="glass-panel-glow rounded-2xl p-4 sm:p-5 flex flex-col items-center">
+                    <span id="hours" class="text-2xl sm:text-5xl font-black text-white">00</span>
+                    <span class="text-[10px] sm:text-xs uppercase tracking-widest text-neon-cyan font-bold mt-1">Hours</span>
+                </div>
+                <div class="glass-panel-glow rounded-2xl p-4 sm:p-5 flex flex-col items-center">
+                    <span id="minutes" class="text-2xl sm:text-5xl font-black text-white">00</span>
+                    <span class="text-[10px] sm:text-xs uppercase tracking-widest text-neon-cyan font-bold mt-1">Mins</span>
+                </div>
+                <div class="glass-panel-glow rounded-2xl p-4 sm:p-5 flex flex-col items-center">
+                    <span id="seconds" class="text-2xl sm:text-5xl font-black text-white">00</span>
+                    <span class="text-[10px] sm:text-xs uppercase tracking-widest text-neon-cyan font-bold mt-1">Secs</span>
+                </div>
+            </div>
+
+            <!-- Dual CTA Buttons -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 font-mono">
+                <a href="#events" onclick="playBeep(800)" class="w-full sm:w-auto px-8 py-4 rounded-2xl bg-gradient-to-r from-neon-cyan to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-extrabold text-sm uppercase tracking-wider shadow-neon-cyan transition-all transform hover:-translate-y-1 flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-bolt"></i> Explore Events
+                </a>
+                <a href="#ticket-builder" onclick="playBeep(600)" class="w-full sm:w-auto px-8 py-4 rounded-2xl glass-panel border border-slate-700 hover:border-neon-purple text-white font-bold text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-3">
+                    <i class="fa-solid fa-id-card text-neon-purple"></i> Build Event Pass
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-24 relative z-20 bg-slate-950/60 border-t border-slate-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <span class="text-neon-cyan text-xs font-mono uppercase tracking-widest mb-2 block font-bold">// ABOUT THE FESTIVAL</span>
+                    <h2 class="text-3xl sm:text-5xl font-black text-white mb-6 font-mono leading-tight">
+                        A DUAL REVOLUTION OF TECH & CULTURAL ARTISTRY
+                    </h2>
+                    <p class="text-slate-300 text-base leading-relaxed mb-6 font-sans">
+                        NEXUS 2027 is the flagship national festival organized by the College Council of Technology. Spanning three electrifying days, NEXUS brings together programmers, musicians, gamers, and designers from over 200 institutions nationwide.
+                    </p>
+                    <div class="grid grid-cols-3 gap-4 pt-6 border-t border-slate-800 font-mono">
+                        <div class="p-4 rounded-2xl glass-panel">
+                            <span class="text-2xl sm:text-3xl font-black text-neon-cyan block">45+</span>
+                            <span class="text-[10px] text-slate-400 uppercase tracking-wider">Events</span>
+                        </div>
+                        <div class="p-4 rounded-2xl glass-panel">
+                            <span class="text-2xl sm:text-3xl font-black text-neon-purple block">$30K+</span>
+                            <span class="text-[10px] text-slate-400 uppercase tracking-wider">Prizes</span>
+                        </div>
+                        <div class="p-4 rounded-2xl glass-panel">
+                            <span class="text-2xl sm:text-3xl font-black text-neon-gold block">15K+</span>
+                            <span class="text-[10px] text-slate-400 uppercase tracking-wider">Attendees</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 font-mono">
+                    <div class="space-y-4">
+                        <div class="glass-panel p-6 rounded-3xl border border-neon-cyan/20">
+                            <i class="fa-solid fa-microchip text-3xl text-neon-cyan mb-3"></i>
+                            <h3 class="text-lg font-bold text-white mb-1">AI & Robotics</h3>
+                            <p class="text-xs text-slate-400">Generative model hacks & combat robotics arenas.</p>
+                        </div>
+                        <div class="glass-panel p-6 rounded-3xl border border-neon-purple/20">
+                            <i class="fa-solid fa-gamepad text-3xl text-neon-purple mb-3"></i>
+                            <h3 class="text-lg font-bold text-white mb-1">Esports League</h3>
+                            <p class="text-xs text-slate-400">Valorant & League tournaments with live streams.</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4 pt-6">
+                        <div class="glass-panel p-6 rounded-3xl border border-neon-gold/20">
+                            <i class="fa-solid fa-guitar text-3xl text-neon-gold mb-3"></i>
+                            <h3 class="text-lg font-bold text-white mb-1">Sonic Nights</h3>
+                            <p class="text-xs text-slate-400">Live indie bands, EDM pro-nights & DJ showdowns.</p>
+                        </div>
+                        <div class="glass-panel p-6 rounded-3xl border border-pink-500/20">
+                            <i class="fa-solid fa-palette text-3xl text-pink-400 mb-3"></i>
+                            <h3 class="text-lg font-bold text-white mb-1">Design Ops</h3>
+                            <p class="text-xs text-slate-400">3D motion graphics, digital art & UI/UX sprints.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Events Showcase Section -->
+    <section id="events" class="py-24 relative z-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <span class="text-neon-cyan text-xs font-mono uppercase tracking-widest mb-2 block font-bold">// COMPETITIONS & SHOWCASES</span>
+                <h2 class="text-3xl sm:text-5xl font-black text-white font-mono mb-4">EXPLORE THE ARENAS</h2>
+                <p class="text-slate-400 text-sm sm:text-base">Filter by category or search by event keyword to inspect seat capacity and rules.</p>
+
+                <!-- Search Bar & Filters Container -->
+                <div class="mt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+                    <!-- Search Input -->
+                    <div class="relative w-full md:w-80 font-mono">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                        <input type="text" id="eventSearch" oninput="filterEvents()" placeholder="Search event or tag..." class="w-full pl-10 pr-4 py-3 rounded-2xl glass-panel text-xs text-white placeholder-slate-500 border border-slate-800 focus:outline-none focus:border-neon-cyan transition-colors">
+                    </div>
+
+                    <!-- Category Tabs -->
+                    <div class="flex flex-wrap items-center justify-center gap-2 font-mono text-xs w-full md:w-auto">
+                        <button onclick="setCategory('all')" class="cat-btn active px-4 py-2.5 rounded-xl bg-neon-cyan text-slate-950 font-bold transition-all shadow-neon-cyan">All</button>
+                        <button onclick="setCategory('tech')" class="cat-btn px-4 py-2.5 rounded-xl glass-panel text-slate-300 hover:text-white transition-all">Tech</button>
+                        <button onclick="setCategory('esports')" class="cat-btn px-4 py-2.5 rounded-xl glass-panel text-slate-300 hover:text-white transition-all">Esports</button>
+                        <button onclick="setCategory('cultural')" class="cat-btn px-4 py-2.5 rounded-xl glass-panel text-slate-300 hover:text-white transition-all">Cultural</button>
+                        <button onclick="setCategory('design')" class="cat-btn px-4 py-2.5 rounded-xl glass-panel text-slate-300 hover:text-white transition-all">Design</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Events Dynamic Grid -->
+            <div id="eventsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Javascript will populate dynamic event cards here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Interactive Ticket Pass Builder Section -->
+    <section id="ticket-builder" class="py-24 relative z-20 bg-slate-950/80 border-t border-slate-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16">
+                <span class="text-neon-cyan text-xs font-mono uppercase tracking-widest mb-2 block font-bold">// BUILD YOUR DIGITAL PASS</span>
+                <h2 class="text-3xl sm:text-5xl font-black text-white font-mono mb-4">INTERACTIVE PASS BUILDER</h2>
+                <p class="text-slate-400 text-sm sm:text-base">Customize your pass, select add-ons, and watch your real-time QR badge update live.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <!-- Pass Builder Form Controls -->
+                <div class="lg:col-span-7 glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800 space-y-6">
+                    <h3 class="text-xl font-bold text-white font-mono flex items-center gap-2">
+                        <i class="fa-solid fa-sliders text-neon-cyan"></i> 1. Select Base Pass Type
+                    </h3>
+
+                    <!-- Pass Options -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="passType" value="standard" checked onchange="updateTicket()" class="peer hidden">
+                            <div class="p-4 rounded-2xl glass-panel border border-slate-800 peer-checked:border-neon-cyan peer-checked:bg-neon-cyan/10 transition-all flex flex-col justify-between h-36">
+                                <span class="text-xs text-slate-400 uppercase">Standard</span>
+                                <span class="text-lg font-bold text-white">General Access</span>
+                                <span class="text-neon-cyan font-bold">$15</span>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="passType" value="hackathon" onchange="updateTicket()" class="peer hidden">
+                            <div class="p-4 rounded-2xl glass-panel border border-slate-800 peer-checked:border-neon-purple peer-checked:bg-neon-purple/10 transition-all flex flex-col justify-between h-36">
+                                <span class="text-xs text-slate-400 uppercase">Tech Pass</span>
+                                <span class="text-lg font-bold text-white">Hackathon Special</span>
+                                <span class="text-neon-purple font-bold">$25</span>
+                            </div>
+                        </label>
+
+                        <label class="cursor-pointer">
+                            <input type="radio" name="passType" value="vip" onchange="updateTicket()" class="peer hidden">
+                            <div class="p-4 rounded-2xl glass-panel border border-slate-800 peer-checked:border-neon-gold peer-checked:bg-neon-gold/10 transition-all flex flex-col justify-between h-36">
+                                <span class="text-xs text-slate-400 uppercase">VIP All-Access</span>
+                                <span class="text-lg font-bold text-white">Pro Night & Lounges</span>
+                                <span class="text-neon-gold font-bold">$45</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Personal Information Input -->
+                    <div class="space-y-4 pt-4 border-t border-slate-800">
+                        <h3 class="text-xl font-bold text-white font-mono flex items-center gap-2">
+                            <i class="fa-solid fa-user-gear text-neon-cyan"></i> 2. Pass Holder Details
+                        </h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 font-mono">
+                            <div>
+                                <label class="block text-xs text-slate-400 uppercase mb-2">Full Name</label>
+                                <input type="text" id="passName" oninput="updateTicket()" value="Alex Vance" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-neon-cyan">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-slate-400 uppercase mb-2">College ID / Reg No.</label>
+                                <input type="text" id="passCollegeId" oninput="updateTicket()" value="IET-2027-99" class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-neon-cyan">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Add-on Options -->
+                    <div class="space-y-4 pt-4 border-t border-slate-800">
+                        <h3 class="text-xl font-bold text-white font-mono flex items-center gap-2">
+                            <i class="fa-solid fa-cube text-neon-cyan"></i> 3. Add-on Extras
+                        </h3>
+                        <div class="space-y-3 font-mono text-xs">
+                            <label class="flex items-center justify-between p-3.5 rounded-xl glass-panel cursor-pointer border border-slate-800">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" id="addonMerch" onchange="updateTicket()" class="w-4 h-4 rounded accent-neon-cyan">
+                                    <span class="text-slate-200">Official NEXUS Cyber Hoodie & Badge Kit</span>
+                                </div>
+                                <span class="text-neon-cyan font-bold">+$20</span>
+                            </label>
+
+                            <label class="flex items-center justify-between p-3.5 rounded-xl glass-panel cursor-pointer border border-slate-800">
+                                <div class="flex items-center gap-3">
+                                    <input type="checkbox" id="addonWorkshop" onchange="updateTicket()" class="w-4 h-4 rounded accent-neon-cyan">
+                                    <span class="text-slate-200">Generative AI Hands-on Masterclass Certification</span>
+                                </div>
+                                <span class="text-neon-cyan font-bold">+$10</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Checkout Button -->
+                    <div class="pt-4 border-t border-slate-800 flex items-center justify-between">
+                        <div>
+                            <span class="text-xs text-slate-400 font-mono uppercase block">Total Price</span>
+                            <span id="passTotalPrice" class="text-3xl font-black text-white font-mono">$15</span>
+                        </div>
+                        <button onclick="playBeep(900); openAuthModal('signup');" class="px-8 py-4 rounded-xl bg-gradient-to-r from-neon-cyan via-purple-600 to-pink-500 text-slate-950 font-mono font-black text-xs uppercase tracking-wider shadow-neon-cyan">
+                            Complete Order & Get Pass
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Real-time QR Badge Preview Box -->
+                <div class="lg:col-span-5 sticky top-28">
+                    <div id="badgePreviewCard" class="glass-panel rounded-3xl p-6 sm:p-8 border border-neon-cyan/40 shadow-neon-cyan relative overflow-hidden flex flex-col justify-between min-h-[480px]">
+                        <!-- Holographic ambient glow background -->
+                        <div class="absolute -top-10 -right-10 w-40 h-40 bg-neon-cyan/20 rounded-full blur-3xl pointer-events-none"></div>
+
+                        <!-- Badge Header -->
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-4 relative z-10 font-mono">
+                            <div class="flex items-center gap-2">
+                                <span class="w-3 h-3 rounded-full bg-neon-cyan animate-ping"></span>
+                                <span class="text-xs font-bold uppercase tracking-widest text-slate-300">NEXUS 2027 DIGITAL PASS</span>
+                            </div>
+                            <span id="badgeTypeTag" class="px-2.5 py-1 rounded-md bg-neon-cyan/20 border border-neon-cyan text-neon-cyan text-[10px] font-bold uppercase">STANDARD</span>
+                        </div>
+
+                        <!-- Badge Body -->
+                        <div class="my-6 relative z-10 text-center">
+                            <div class="w-20 h-20 rounded-full mx-auto mb-4 bg-gradient-to-tr from-cyan-500 to-purple-600 p-[2px]">
+                                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" alt="Avatar" class="w-full h-full object-cover rounded-full">
+                            </div>
+                            <h4 id="badgeName" class="text-2xl font-black text-white font-mono tracking-tight">ALEX VANCE</h4>
+                            <p id="badgeCollege" class="text-xs font-mono text-neon-cyan mt-1">ID: IET-2027-99</p>
+
+                            <!-- QR Code Container -->
+                            <div class="mt-6 flex flex-col items-center justify-center">
+                                <div id="qrcode" class="p-3 bg-white rounded-xl shadow-lg"></div>
+                                <span class="text-[10px] font-mono text-slate-500 mt-2">SCAN FOR GATE ACCESS ENTRY</span>
+                            </div>
+                        </div>
+
+                        <!-- Badge Footer -->
+                        <div class="pt-4 border-t border-slate-800 flex items-center justify-between relative z-10 font-mono text-[10px] text-slate-400">
+                            <span>VENUE: MAIN CAMPUS</span>
+                            <span class="text-neon-cyan">STATUS: VERIFIED</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Schedule & Timeline Section -->
+    <section id="schedule" class="py-24 relative z-20">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <span class="text-neon-cyan text-xs font-mono uppercase tracking-widest mb-2 block font-bold">// TIMELINE ITINERARY</span>
+                <h2 class="text-3xl sm:text-5xl font-black text-white font-mono mb-4">FESTIVAL SCHEDULE</h2>
+                <p class="text-slate-400 text-sm sm:text-base">3 days of non-stop action. Select a day to view sessions and keynote speakers.</p>
+
+                <!-- Day Selector -->
+                <div class="flex items-center justify-center gap-3 mt-8 font-mono text-xs">
+                    <button onclick="switchScheduleDay(1)" id="dayBtn1" class="px-6 py-3 rounded-xl bg-neon-cyan text-slate-950 font-bold shadow-neon-cyan transition-all">DAY 01 (MAR 12)</button>
+                    <button onclick="switchScheduleDay(2)" id="dayBtn2" class="px-6 py-3 rounded-xl glass-panel text-slate-300 hover:text-white transition-all">DAY 02 (MAR 13)</button>
+                    <button onclick="switchScheduleDay(3)" id="dayBtn3" class="px-6 py-3 rounded-xl glass-panel text-slate-300 hover:text-white transition-all">DAY 03 (MAR 14)</button>
+                </div>
+            </div>
+
+            <!-- Schedule Items Dynamic Box -->
+            <div id="scheduleTimeline" class="space-y-4 font-mono">
+                <!-- Javascript populates timeline items -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Campus Buzz & Leaderboard -->
+    <section id="buzz" class="py-24 relative z-20 bg-slate-950/80 border-t border-slate-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <!-- College Championship Leaderboard -->
+                <div>
+                    <span class="text-neon-cyan text-xs font-mono uppercase tracking-widest mb-2 block font-bold">// INTER-COLLEGE CHAMPIONSHIP</span>
+                    <h2 class="text-2xl sm:text-4xl font-black text-white font-mono mb-6">LIVE LEADERBOARD</h2>
+                    <div class="glass-panel rounded-3xl p-6 border border-slate-800 space-y-4 font-mono">
+                        <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-900/80 border border-neon-gold/40">
+                            <div class="flex items-center gap-4">
+                                <span class="w-8 h-8 rounded-full bg-neon-gold text-slate-950 font-black flex items-center justify-center text-sm">1</span>
+                                <div>
+                                    <h4 class="font-bold text-white">MIT Autonomous Team</h4>
+                                    <span class="text-[10px] text-slate-400">12 Medals &bull; Hackathon Lead</span>
+                                </div>
+                            </div>
+                            <span class="text-neon-gold font-bold">1,450 PTS</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
+                            <div class="flex items-center gap-4">
+                                <span class="w-8 h-8 rounded-full bg-slate-700 text-white font-black flex items-center justify-center text-sm">2</span>
+                                <div>
+                                    <h4 class="font-bold text-white">Stanford Cyber Guild</h4>
+                                    <span class="text-[10px] text-slate-400">9 Medals &bull; Esports Finalist</span>
+                                </div>
+                            </div>
+                            <span class="text-neon-cyan font-bold">1,210 PTS</span>
+                        </div>
+
+                        <div class="flex items-center justify-between p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
+                            <div class="flex items-center gap-4">
+                                <span class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 font-black flex items-center justify-center text-sm">3</span>
+                                <div>
+                                    <h4 class="font-bold text-white">IET National Warriors</h4>
+                                    <span class="text-[10px] text-slate-400">8 Medals &bull; Band Winner</span>
+                                </div>
+                            </div>
+                            <span class="text-neon-purple font-bold">980 PTS</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Campus Buzz Feed -->
+                <div>
+                    <span class="text-neon-cyan text-xs font-mono uppercase tracking-widest mb-2 block font-bold">// SOCIAL STREAM</span>
+                    <h2 class="text-2xl sm:text-4xl font-black text-white font-mono mb-6">CAMPUS BUZZ FEED</h2>
+                    <div class="space-y-4">
+                        <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex items-start gap-4">
+                            <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" class="w-10 h-10 rounded-full object-cover">
+                            <div>
+                                <div class="flex items-center gap-2 font-mono text-xs">
+                                    <span class="font-bold text-white">@cyber_dev</span>
+                                    <span class="text-slate-500">&bull; 10m ago</span>
+                                </div>
+                                <p class="text-xs text-slate-300 mt-1">Just submitted our AI solution for NEXUS Hackathon! Continuous coffee drinking for 18 hours paid off ☕🚀</p>
+                            </div>
+                        </div>
+
+                        <div class="glass-panel p-5 rounded-2xl border border-slate-800 flex items-start gap-4">
+                            <img src="https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=100&q=80" class="w-10 h-10 rounded-full object-cover">
+                            <div>
+                                <div class="flex items-center gap-2 font-mono text-xs">
+                                    <span class="font-bold text-white">@sarah_beats</span>
+                                    <span class="text-slate-500">&bull; 32m ago</span>
+                                </div>
+                                <p class="text-xs text-slate-300 mt-1">Sound check complete for Rhythm Arena! Can't wait to headline Day 2 pro-night stage! 🎸🔥</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section Accordion -->
+    <section class="py-24 relative z-20">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-2xl mx-auto mb-12">
+                <span class="text-neon-cyan text-xs font-mono uppercase tracking-widest mb-2 block font-bold">// GOT QUESTIONS?</span>
+                <h2 class="text-3xl font-black text-white font-mono">FREQUENTLY ASKED QUESTIONS</h2>
+            </div>
+
+            <div class="space-y-4 font-mono">
+                <div class="glass-panel rounded-2xl overflow-hidden border border-slate-800">
+                    <button onclick="toggleFaq(this)" class="w-full p-5 text-left flex items-center justify-between font-bold text-white text-sm focus:outline-none">
+                        <span>How do I verify my Student College ID?</span>
+                        <i class="fa-solid fa-chevron-down text-neon-cyan transition-transform"></i>
+                    </button>
+                    <div class="faq-desc hidden px-5 pb-5 text-xs text-slate-400 leading-relaxed font-sans">
+                        During the sign-in or registration process, click 'Simulate ID Verification'. You will upload or enter your college ID number to receive an instant digital QR verification pass.
+                    </div>
+                </div>
+
+                <div class="glass-card glass-panel rounded-2xl overflow-hidden border border-slate-800">
+                    <button onclick="toggleFaq(this)" class="w-full p-5 text-left flex items-center justify-between font-bold text-white text-sm focus:outline-none">
+                        <span>Can I register for multiple technical and cultural events?</span>
+                        <i class="fa-solid fa-chevron-down text-neon-cyan transition-transform"></i>
+                    </button>
+                    <div class="faq-desc hidden px-5 pb-5 text-xs text-slate-400 leading-relaxed font-sans">
+                        Yes! As long as event schedules do not overlap on the festival timeline, you are allowed to participate in unlimited competitions with your All-Access pass.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-slate-950 border-t border-slate-900 pt-16 pb-12 relative z-20 font-mono text-xs text-slate-400">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-xl bg-neon-cyan text-slate-950 font-black flex items-center justify-center text-lg">N</div>
+                    <span class="text-lg font-bold text-white">NEXUS '27</span>
+                </div>
+                <div class="flex items-center gap-6">
+                    <a href="#" class="hover:text-neon-cyan">Instagram</a>
+                    <a href="#" class="hover:text-neon-cyan">Discord</a>
+                    <a href="#" class="hover:text-neon-cyan">Twitter/X</a>
+                    <a href="#" class="hover:text-neon-cyan">GitHub</a>
+                </div>
+            </div>
+            <div class="text-center md:text-left text-[11px] text-slate-600 border-t border-slate-900 pt-6">
+                &copy; 2027 NEXUS Festival Executive Committee. Built with HTML, Tailwind CSS & Pure JS.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Event Quick Detail Modal Popup -->
+    <div id="eventModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden font-mono">
+        <div class="glass-panel rounded-3xl max-w-xl w-full p-6 sm:p-8 relative border border-neon-cyan/40 shadow-neon-cyan bg-slate-900">
+            <button onclick="closeEventModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+            <span id="emCategory" class="px-3 py-1 rounded-md bg-neon-cyan/20 text-neon-cyan text-[10px] font-bold uppercase">CATEGORY</span>
+            <h3 id="emTitle" class="text-2xl font-black text-white mt-2">EVENT TITLE</h3>
+            <p id="emDesc" class="text-xs text-slate-300 font-sans mt-3 leading-relaxed"></p>
+
+            <div class="grid grid-cols-2 gap-4 my-6 py-4 border-y border-slate-800 text-xs">
+                <div>
+                    <span class="text-slate-500 block uppercase">Prize Pool</span>
+                    <span id="emPrize" class="text-neon-cyan font-bold text-base"></span>
+                </div>
+                <div>
+                    <span class="text-slate-500 block uppercase">Team Size</span>
+                    <span id="emTeam" class="text-white font-bold text-base"></span>
+                </div>
+            </div>
+
+            <button onclick="closeEventModal(); openAuthModal('signup');" class="w-full py-3.5 rounded-xl bg-neon-cyan text-slate-950 font-black text-xs uppercase tracking-wider shadow-neon-cyan">
+                Confirm Quick Slot Booking
+            </button>
+        </div>
+    </div>
+
+    <!-- Authentication Modal with Student ID Simulator -->
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md hidden font-mono">
+        <div class="glass-panel rounded-3xl max-w-md w-full p-6 sm:p-8 relative border border-slate-800 bg-slate-950">
+            <button onclick="closeAuthModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-xl"></i>
+            </button>
+
+            <div class="flex rounded-xl bg-slate-900 p-1 mb-6 border border-slate-800">
+                <button onclick="switchAuthTab('signin')" id="tabSignin" class="flex-1 py-2 text-xs font-bold uppercase rounded-lg bg-neon-cyan text-slate-950">Sign In</button>
+                <button onclick="switchAuthTab('signup')" id="tabSignup" class="flex-1 py-2 text-xs font-bold uppercase rounded-lg text-slate-400">Register</button>
+            </div>
+
+            <!-- Sign In Form -->
+            <form id="formSignin" onsubmit="handleAuth(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] text-slate-400 uppercase mb-1">Student Email</label>
+                    <input type="email" required placeholder="student@college.edu" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-neon-cyan">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-slate-400 uppercase mb-1">Password</label>
+                    <input type="password" required placeholder="••••••••" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-neon-cyan">
+                </div>
+                <button type="submit" class="w-full py-3.5 rounded-xl bg-neon-cyan text-slate-950 font-bold text-xs uppercase shadow-neon-cyan">
+                    Authenticate Account
+                </button>
+            </form>
+
+            <!-- Register Form with ID Verification Simulation -->
+            <form id="formSignup" onsubmit="handleAuth(event)" class="space-y-4 hidden">
+                <div>
+                    <label class="block text-[10px] text-slate-400 uppercase mb-1">Full Name</label>
+                    <input type="text" required placeholder="Taylor Swift" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-neon-cyan">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-slate-400 uppercase mb-1">College ID Card No.</label>
+                    <input type="text" id="simIdInput" required placeholder="IET-2027-404" class="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-neon-cyan">
+                </div>
+                
+                <!-- ID Verification Simulator Button -->
+                <button type="button" onclick="simulateIdVerify()" id="idVerifyBtn" class="w-full py-2.5 rounded-xl bg-slate-900 border border-neon-cyan/40 text-neon-cyan text-[10px] uppercase font-bold flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-id-badge"></i> Verify Student College ID
+                </button>
+
+                <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-neon-cyan to-purple-600 text-slate-950 font-bold text-xs uppercase shadow-neon-cyan">
+                    Complete Registration
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Data & Interactivity -->
+    <script>
+        // Event Data Array
+        const eventsData = [
+            { id: 1, title: 'AI Neural Hackathon', category: 'tech', prize: '$8,000', seats: '88%', desc: '24-hour neural network sprint. Build LLM agents and autonomous workflows.', team: '2-4 Members', tag: 'AI' },
+            { id: 2, title: 'Valorant Cyber League', category: 'esports', prize: '$5,000', seats: '95%', desc: '5v5 tactical shooter championship with live casters and hall of fame trophy.', team: '5 Players', tag: 'FPS' },
+            { id: 3, title: 'Rhythm Arena Band Clash', category: 'cultural', prize: '$4,500', seats: '60%', desc: 'Rock and indie music showdown on the open-air acoustic amphitheater stage.', team: 'Band (3-6)', tag: 'Music' },
+            { id: 4, title: '3D UI/UX Motion Sprint', category: 'design', prize: '$3,000', seats: '75%', desc: 'Prototyping futuristic Spatial computing interfaces in Figma and Spline.', team: 'Solo / Duo', tag: 'UI/UX' },
+            { id: 5, title: 'Heavyweight RoboWars', category: 'tech', prize: '$6,000', seats: '82%', desc: '15kg spinner and flipper combat bots clashing in reinforced steel arena.', team: '2-5 Members', tag: 'Robotics' },
+            { id: 6, title: 'Pro Night DJ Rave', category: 'cultural', prize: 'Star Night', seats: '50%', desc: 'International EDM artists performing live on Day 3 grand finale stage.', team: 'All Pass Holders', tag: 'EDM' }
+        ];
+
+        // Render Event Cards dynamically
+        let currentCategory = 'all';
+
+        function renderEvents() {
+            const grid = document.getElementById('eventsGrid');
+            const searchQuery = document.getElementById('eventSearch').value.toLowerCase();
+            grid.innerHTML = '';
+
+            const filtered = eventsData.filter(ev => {
+                const matchCat = currentCategory === 'all' || ev.category === currentCategory;
+                const matchSearch = ev.title.toLowerCase().includes(searchQuery) || ev.tag.toLowerCase().includes(searchQuery);
+                return matchCat && matchSearch;
+            });
+
+            filtered.forEach(ev => {
+                const card = document.createElement('div');
+                card.className = 'glass-panel rounded-3xl p-6 border border-slate-800 hover:border-neon-cyan/50 transition-all flex flex-col justify-between group font-mono';
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="px-2.5 py-1 rounded-md bg-neon-cyan/10 border border-neon-cyan/30 text-neon-cyan text-[10px] font-bold uppercase">${ev.tag}</span>
+                            <span class="text-xs text-neon-gold font-bold">${ev.prize}</span>
+                        </div>
+                        <h3 class="text-xl font-bold text-white group-hover:text-neon-cyan transition-colors">${ev.title}</h3>
+                        <p class="text-xs text-slate-400 font-sans mt-2 line-clamp-2">${ev.desc}</p>
+                    </div>
+
+                    <div class="mt-6 pt-4 border-t border-slate-800/80">
+                        <div class="flex justify-between text-[10px] text-slate-400 mb-1">
+                            <span>Capacity Booked</span>
+                            <span class="text-neon-cyan font-bold">${ev.seats}</span>
+                        </div>
+                        <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden mb-4">
+                            <div class="h-full bg-gradient-to-r from-neon-cyan to-purple-500 rounded-full" style="width: ${ev.seats}"></div>
+                        </div>
+                        <button onclick="openEventModal(${ev.id})" class="w-full py-2.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-neon-cyan text-slate-200 hover:text-white text-xs font-bold transition-all">
+                            Details & Register
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function setCategory(cat) {
+            playBeep(500);
+            currentCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.className = 'cat-btn px-4 py-2.5 rounded-xl glass-panel text-slate-300 hover:text-white transition-all';
+            });
+            event.target.className = 'cat-btn px-4 py-2.5 rounded-xl bg-neon-cyan text-slate-950 font-bold transition-all shadow-neon-cyan';
+            renderEvents();
+        }
+
+        function filterEvents() {
+            renderEvents();
+        }
+
+        // Quick Modal Popup
+        function openEventModal(id) {
+            playBeep(700);
+            const ev = eventsData.find(e => e.id === id);
+            document.getElementById('emTitle').innerText = ev.title;
+            document.getElementById('emCategory').innerText = ev.category;
+            document.getElementById('emDesc').innerText = ev.desc;
+            document.getElementById('emPrize').innerText = ev.prize;
+            document.getElementById('emTeam').innerText = ev.team;
+            document.getElementById('eventModal').classList.remove('hidden');
+        }
+
+        function closeEventModal() {
+            document.getElementById('eventModal').classList.add('hidden');
+        }
+
+        // Live Dynamic Pass Builder Logic
+        let qrcodeObj = null;
+
+        function updateTicket() {
+            const passType = document.querySelector('input[name="passType"]:checked').value;
+            const name = document.getElementById('passName').value || 'Alex Vance';
+            const collegeId = document.getElementById('passCollegeId').value || 'IET-2027-99';
+            const merch = document.getElementById('addonMerch').checked;
+            const workshop = document.getElementById('addonWorkshop').checked;
+
+            let base = 15;
+            let badgeTag = 'STANDARD';
+            if(passType === 'hackathon') { base = 25; badgeTag = 'TECH PASS'; }
+            if(passType === 'vip') { base = 45; badgeTag = 'VIP ACCESS'; }
+
+            if(merch) base += 20;
+            if(workshop) base += 10;
+
+            document.getElementById('passTotalPrice').innerText = `$${base}`;
+            document.getElementById('badgeName').innerText = name.toUpperCase();
+            document.getElementById('badgeCollege').innerText = `ID: ${collegeId.toUpperCase()}`;
+            document.getElementById('badgeTypeTag').innerText = badgeTag;
+
+            // Generate real-time QR code
+            const qrData = `NEXUS2027-${badgeTag}-${name}-${collegeId}`;
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = '';
+            new QRCode(qrContainer, {
+                text: qrData,
+                width: 90,
+                height: 90,
+                colorDark : "#030712",
+                colorLight : "#ffffff",
+                correctLevel : QRCode.CorrectLevel.H
+            });
+        }
+
+        // Schedule Day Switcher
+        const scheduleData = {
+            1: [
+                { time: '09:00 AM', title: 'Grand Opening & AI Keynote', hall: 'Auditorium Hall A', tag: 'Keynote' },
+                { time: '11:00 AM', title: 'AI Neural Hackathon Kickoff', hall: 'Cyber Lab 01', tag: 'Tech' },
+                { time: '03:00 PM', title: 'Valorant Esports Prelims', hall: 'Gaming Arena', tag: 'Esports' }
+            ],
+            2: [
+                { time: '10:00 AM', title: 'RoboWars Metal Combat', hall: 'Main Grounds', tag: 'Robotics' },
+                { time: '05:00 PM', title: 'Rhythm Arena Band Battle', hall: 'Open Air Amphitheater', tag: 'Cultural' }
+            ],
+            3: [
+                { time: '11:00 AM', title: 'Spatial Computing Masterclass', hall: 'Seminar Hall 2', tag: 'Workshop' },
+                { time: '07:00 PM', title: 'Grand Finale & EDM Star Night', hall: 'Main Stadium', tag: 'Pro Night' }
+            ]
+        };
+
+        function switchScheduleDay(day) {
+            playBeep(600);
+            [1, 2, 3].forEach(d => {
+                const btn = document.getElementById(`dayBtn${d}`);
+                if(d === day) {
+                    btn.className = 'px-6 py-3 rounded-xl bg-neon-cyan text-slate-950 font-bold shadow-neon-cyan transition-all';
+                } else {
+                    btn.className = 'px-6 py-3 rounded-xl glass-panel text-slate-300 hover:text-white transition-all';
+                }
+            });
+
+            const timeline = document.getElementById('scheduleTimeline');
+            timeline.innerHTML = '';
+            scheduleData[day].forEach(item => {
+                const el = document.createElement('div');
+                el.className = 'glass-panel p-5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4';
+                el.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="px-3 py-2 rounded-xl bg-neon-cyan/10 border border-neon-cyan/30 text-neon-cyan font-bold text-xs shrink-0">${item.time}</div>
+                        <div>
+                            <h4 class="font-bold text-white text-base">${item.title}</h4>
+                            <span class="text-xs text-slate-400 font-sans">${item.hall}</span>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 rounded-md bg-slate-900 text-slate-300 text-[10px] font-bold uppercase self-start sm:self-auto border border-slate-800">${item.tag}</span>
+                `;
+                timeline.appendChild(el);
+            });
+        }
+
+        // FAQ Toggle
+        function toggleFaq(btn) {
+            playBeep(400);
+            const desc = btn.nextElementSibling;
+            const icon = btn.querySelector('i');
+            desc.classList.toggle('hidden');
+            icon.classList.toggle('rotate-180');
+        }
+
+        // Auth & ID Verification Simulation
+        function openAuthModal(tab) {
+            playBeep(600);
+            switchAuthTab(tab);
+            document.getElementById('authModal').classList.remove('hidden');
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+        }
+
+        function switchAuthTab(tab) {
+            const tSignin = document.getElementById('tabSignin');
+            const tSignup = document.getElementById('tabSignup');
+            const fSignin = document.getElementById('formSignin');
+            const fSignup = document.getElementById('formSignup');
+
+            if(tab === 'signin') {
+                tSignin.className = 'flex-1 py-2 text-xs font-bold uppercase rounded-lg bg-neon-cyan text-slate-950';
+                tSignup.className = 'flex-1 py-2 text-xs font-bold uppercase rounded-lg text-slate-400';
+                fSignin.classList.remove('hidden');
+                fSignup.classList.add('hidden');
+            } else {
+                tSignup.className = 'flex-1 py-2 text-xs font-bold uppercase rounded-lg bg-neon-cyan text-slate-950';
+                tSignin.className = 'flex-1 py-2 text-xs font-bold uppercase rounded-lg text-slate-400';
+                fSignup.classList.remove('hidden');
+                fSignin.classList.add('hidden');
+            }
+        }
+
+        function simulateIdVerify() {
+            playBeep(800);
+            const btn = document.getElementById('idVerifyBtn');
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Verifying College Database...`;
+            setTimeout(() => {
+                btn.className = "w-full py-2.5 rounded-xl bg-emerald-500/20 border border-emerald-500 text-emerald-400 text-[10px] uppercase font-bold flex items-center justify-center gap-2";
+                btn.innerHTML = `<i class="fa-solid fa-circle-check"></i> College ID Verified (Status 200 OK)`;
+                showToast("College ID verified successfully!", "success");
+            }, 1200);
+        }
+
+        function handleAuth(e) {
+            e.preventDefault();
+            playBeep(900);
+            closeAuthModal();
+            showToast("Authentication successful! Welcome to NEXUS 2027.", "success");
+        }
+
+        // Toast Notification
+        function showToast(msg, type) {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            toastMessage.innerText = msg;
+            toast.className = 'fixed bottom-6 right-6 z-50 transform translate-y-0 opacity-100 transition-all duration-300 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border text-xs font-mono glass-panel border-neon-cyan/50 text-white';
+            toastIcon.className = 'fa-solid fa-circle-check text-neon-cyan';
+
+            setTimeout(() => {
+                toast.className = 'fixed bottom-6 right-6 z-50 transform translate-y-32 opacity-0 transition-all duration-300 flex items-center gap-3 px-5 py-4 rounded-2xl shadow-2xl border text-xs font-mono glass-panel';
+            }, 3500);
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        }
+
+        // Particle Canvas Animation Engine
+        const canvas = document.getElementById('particleCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 2 + 0.5;
+                this.speedX = (Math.random() - 0.5) * 0.6;
+                this.speedY = (Math.random() - 0.5) * 0.6;
+                this.color = Math.random() > 0.5 ? '#00f3ff' : '#b026ff';
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                if(this.x < 0 || this.x > canvas.width) this.speedX *= -1;
+                if(this.y < 0 || this.y > canvas.height) this.speedY *= -1;
+            }
+            draw() {
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for(let i = 0; i < 70; i++) particles.push(new Particle());
+
+        function animateParticles() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            requestAnimationFrame(animateParticles);
+        }
+        animateParticles();
+
+        // Countdown Timer Engine
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + 12);
+
+        function updateCountdown() {
+            const now = new Date().getTime();
+            const diff = targetDate - now;
+
+            if (diff <= 0) return;
+
+            document.getElementById('days').innerText = String(Math.floor(diff / (1000 * 60 * 60 * 24))).padStart(2, '0');
+            document.getElementById('hours').innerText = String(Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+            document.getElementById('minutes').innerText = String(Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+            document.getElementById('seconds').innerText = String(Math.floor((diff % (1000 * 60)) / 1000)).padStart(2, '0');
+        }
+        setInterval(updateCountdown, 1000);
+
+        // Window Initializer
+        window.onload = function() {
+            renderEvents();
+            updateTicket();
+            switchScheduleDay(1);
+            updateCountdown();
+        }
+    </script>
+</body>
+</html>
